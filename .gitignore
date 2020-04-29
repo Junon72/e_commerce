@@ -1,9 +1,6 @@
-foo
-.vscode
-*.vscode
-vscode/
-.vscode/
+.VSCode
 env.py
+foo
 
 
 # Created by https://www.gitignore.io/api/django
