@@ -3,7 +3,8 @@
 ## index
 
 1. [Setting up VSCode](#Setting-up-VSCode)
-
+2. [Create a django project](#Create-a-django-project)
+3. [Reusing An Accounts App](#Reusing-An-Account-App)
 
 
 
@@ -70,4 +71,133 @@ Create requirements.txt file
 
 `django-admin startproject ecommerce .`
 
+In settings.py, add ip path
+
+```bash
+ALLOWED_HOSTS = [
+    '127.0.0.1'
+]
+```
+
+In Terminal change the manage.py mode to runnable, migrate and run
+
+```bash
+chmod 777 ./manage.py
+
+./manage.py migrate
+
+./manage.py runserver 127.0.0.1:8000
+```
+
+Open the project in Browser -> The Install Works Successfully!
+
+## Reusing An Accounts App
+
+Import form django_authentication:
+
+```bash
+accounts
+    _init_py
+    admin.py
+    app.py
+    backends.py
+    forms.py
+    models.py
+    tests.py
+    url_reset.py
+    urls.py
+    views.py
+    templates
+        index.html
+        login.html
+        profile.html
+        registration.html
+```
+
+In ecommerce folder add
+
+```bash
+templates
+    registration
+        password_reset_form.html
+    base.html
+```
+
+And in root directory add
+
+```bash
+static
+    css
+        custom.css
+```
+
+! I changed the name from styles.css to custom.css. In base.html change the link href to custom too.
+
+Install bootstrap for forms
+
+`pip3 install django-forms-bootstrap`
+
+In settings.py add the app and bootstrap to INSTALLED_APPS and create AUTHENTICATION_BACKENDS path to backends.py.
+Add the templates path to TEMPLATES > DIRS.
+
+```python
+INSTALLED_APPS = [
+...
+    'accounts',
+    'django_forms_bootstrap',
+
+]
+
+TEMPLATES = [
+...
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
+]
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'accounts.backends.EmailAuth',
+]
+```
+
+Create a storage for messages (although in the video he said this is something only to do wit clou9.
+I did it authentication project and it at least did not brake anything. So, adding it here also.)
+
+```python
+MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
+```
+
+In Terminal migrate all the apps ( )
+
+```bash
+python3 manage.py makemigrations
+
+python3 manage.py migrate
+```
+
+In Browser check the app still works.
+
+In ecommerce > urls.py add paths to accounts urls and reset_urls
+
+```python
+from django.contrib import admin
+from django.urls import path, include
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('accounts/', include('accounts.urls')),
+    path('accounts/', include('accounts.url_reset'))
+]
+```
+
+Create a superuser
+
+```bash
+python3 manage.py createsuperuser`
+
+Username (leave blank to use 'jussinousiainen'): selleri
+Email address: juno.athome@gmail.com
+Password: su
+Password (again):
+Superuser created successfully.
+```
 
