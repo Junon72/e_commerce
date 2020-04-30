@@ -316,9 +316,9 @@ from django.shortcuts import render
 from .models import Product
 
 # Create your views here.
-def all_products():
-    products = Products.objects.all()
-    return render(request, "products.html", ("products", products))
+def all_products(request):
+    products = Product.objects.all()
+    return render(request, "products.html", {"products": products})
 ```
 
 In products create urls.py file and register all_products path
@@ -368,8 +368,152 @@ In products create templates directory and in it products.html
 {% endblock %}
 ```
 
-In settings.py TEMPLATES add context processor for media
+In settings.py TEMPLATES add context processor for media and media root
 
 ```python
 'django.template.context_processors.media',
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'
 ```
+
+
+In ecommmerse > urls.py register path to all_products as the index, and register MEDIA_URL and STATIC_URL path
+
+```python
+from django.contrib import admin
+from django.urls import path, include
+from products.views import all_products
+from django.conf import settings
+from django.conf.urls.static import static
+
+
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('', all_products, name="index"),
+    path('accounts/', include('accounts.urls')),
+    path('accounts/', include('accounts.url_reset')),
+    path('products/', include('products.urls'))
+]
+
+urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+```
+
+Go to http://127.0.0.1:8000/products/ - there is no products added yet.
+
+In http://127.0.0.1:8000/admin/ add a test product
+
+Open site view - there is no add to cart button
+
+[Top](#index)
+
+## Storing Shopping Cart Items In A Session
+
+Create a new app cart and add it to the INSTALLED_APPS
+
+`python3 manage.py startapp cart`
+
+In cart, create context.py file
+
+- Unlike the products app, where we created a model which then puts products into our database, in this case, the cart items will not go into the database.
+They will just be stored in the session when the user is logged in. A user can add products to their cart, but when they log out, that cart will be lost.
+
+```python
+from django.shortcuts import get_object_or_404
+from products.models import Product
+
+def cart_contents(request):
+    """
+    Ensure that the cart contents are available when rendering any page
+    """
+
+    cart = request.session.get('cart', {})
+
+    cart_item = {}
+    total = 0
+    product_count = 0
+    for id, quantity in cart_item():
+        product = get_object_or_404(Product, pk=id)
+        total += quantity * product.price
+        product_count += quantity
+        cart_item.append({'id': id, 'quantity': quantity, 'product': product})
+
+    return { 'cart_item': cart_items, 'total': total, 'product_count': product_count }
+```
+
+In settings.py the cart_contents to the context processor list in TEMPLATES
+
+```python
+'cart.context.cart_contents'
+```
+
+In cart create urls.py
+
+```python
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('', views.view_cart, name="view_cart"),
+    path('add/<id>', views.add_to_cart, name="add_to_cart"),
+    path('adjust/<id>', adjust_cart, name="adjust_cart")
+]
+```
+
+In cart > views.py add route to the views
+
+```python
+from django.shortcuts import render, reverse, redirect
+
+# Create your views here.
+def view_cart(request):
+    """
+    A view that renders the cart contents page
+    """
+    return render(request, "cart.html")
+
+def add_to_cart(request, id):
+    """
+    Add a quantity of the specified products to the cart
+    """
+    quantity=int(request.POST.get('quantity'))
+
+    cart = request.session.get('cart', {})
+    if id in cart:
+        cart[id] = int(cart[id]) + quantity
+    else:
+        cart[id] = cart.get(id, quantity)
+
+    request.session['cart'] = cart
+    return redirect(reverse('index'))
+
+def adjust_cart(request, id):
+    """
+    Adjust the quantity of the specified product to the specified amount
+    """
+    quantity = int(request.POST.get("quantity"))
+    cart = request.session.get('cart', {})
+
+    if quantity > 0:
+        cart[id] = quantity
+    else:
+        cart.pop(id)
+
+    request.session['cart'] = cart
+    retrun redirect(reverse('view_cart'))
+```
+
+Migrate the app
+
+```bash
+python3 manage.py makemigrations cart
+
+python3 manage.py migrate cart
+```
+
+There's nothing to migrate because there is no model, and there is no database table to create.
+A session is stored entirely within your browser memory.
+
+Go to products and try to add a product to the cart.
