@@ -356,7 +356,7 @@ In products create templates directory and in it products.html
             {% csrf_token %}
             <div class=" input-group">
                 <input name="quantity" type="number" min="1" max="999" class="form-control" placeholder="Quantity">
-                <span class="input-group-button">
+                <span class="input-group-btn">
                     <button class="btn btn-success" type="submit">Add</button>
                 </span>
             </div>
@@ -431,16 +431,17 @@ def cart_contents(request):
 
     cart = request.session.get('cart', {})
 
-    cart_item = {}
+    cart_items = []
     total = 0
     product_count = 0
-    for id, quantity in cart_item():
+
+    for id, quantity in cart.items():
         product = get_object_or_404(Product, pk=id)
         total += quantity * product.price
         product_count += quantity
-        cart_item.append({'id': id, 'quantity': quantity, 'product': product})
+        cart_items.append({'id': id, 'quantity': quantity, 'product': product})
 
-    return { 'cart_item': cart_items, 'total': total, 'product_count': product_count }
+    return { 'cart_items': cart_items, 'total': total, 'product_count': product_count }
 ```
 
 In settings.py the cart_contents to the context processor list in TEMPLATES
@@ -457,8 +458,8 @@ from . import views
 
 urlpatterns = [
     path('', views.view_cart, name="view_cart"),
-    path('add/<id>', views.add_to_cart, name="add_to_cart"),
-    path('adjust/<id>', adjust_cart, name="adjust_cart")
+    path('add/<id>/', views.add_to_cart, name="add_to_cart"),
+    path('adjust/<id>/', adjust_cart, name="adjust_cart")
 ]
 ```
 
@@ -487,7 +488,7 @@ def add_to_cart(request, id):
         cart[id] = cart.get(id, quantity)
 
     request.session['cart'] = cart
-    return redirect(reverse('index'))
+    return redirect(reverse('view_cart'))
 
 def adjust_cart(request, id):
     """
@@ -505,6 +506,55 @@ def adjust_cart(request, id):
     retrun redirect(reverse('view_cart'))
 ```
 
+In cart add a templates folder and cart.html in it
+
+```html
+{% extends 'base.html' %}
+{% load static %}
+{% load bootstrap_tags %}
+
+{% block content %}
+<div class="row row-flex">
+    {% for item in cart_items %}
+    
+    <div class="col-xs-10 col-xs-offset-1 col-sm-offset-0 col-sm-6 col-md-4 display panel panel-display">
+        
+        <div class="product" style="background-image: url('{{ MEDIA_URL }}{{ item.product.image }}')"></div>
+        
+        <div class="caption">
+            <h3>{{ item.product.name }}</h3>
+            <p class="product-description">{{ item.product.description }}</p>
+            <p>{{ item.product.price }}</p>
+            <p>
+                
+                <form class="form-inline" method="post" action="{% url 'adjust_cart' item.id %}">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="exampleInputAmount" class="sr-only">New Qty</label>
+                        <div class="input-group">
+                            <div class="input-group-addon">Qty</div>
+                            <input name="quantity" type="number" min="0" max="999" class="form-control">
+                            <div class="input-group-addon">{{item.quantity}}</div>
+                            <span class="input-group-btn">
+                                <button type="submit" class="btn btn-primary"><span class="glyphicon glyphicon-edit"
+                                        aria-hidden="true"></span>Amend</button>
+                            </span>
+                        </div>
+                </form>
+            </p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+<div class="row">
+    <p>Total</p>
+    <p><span class="glyphicon glyphicon-euro" aria-hidden="true"></span>{{ total }}</p>
+    <a href="/" class="btn btn-success" role="button"><span class="glyphicon glyphicon-ok-sign" aria-hidden="true"></span>Checkout</a>
+</div>
+
+{% endblock %}
+```
+
 Migrate the app
 
 ```bash
@@ -517,3 +567,191 @@ There's nothing to migrate because there is no model, and there is no database t
 A session is stored entirely within your browser memory.
 
 Go to products and try to add a product to the cart.
+
+**Issues:**
+
+```bash
+Using the URLconf defined in ecommerce.urls, Django tried these URL patterns, in this order:
+    admin/
+    [name='index']
+    accounts/
+    accounts/
+    products/
+    cart/
+    ^static/(?P<path>.*)$
+    ^media/(?P<path>.*)$
+The current path, {% url 'add_to_cart' product.id %, didn't match any of these.
+```
+
+Missing } at {% url 'add_to_cart' product.id % >
+
+`Reverse for ‘add_to_cart’ not found. ‘add_to_cart’ is not a valid view function or pattern name. `
+
+Cart > templates folder name written wrong
+
+In cart > views.py
+
+`return redirect(reverse('view_cart'))` had `('index.html')` instead >
+
+`NoReverseMatch: Reverse for 'add_to_cart' not found. 'add_to_cart' is not a valid view function or pattern name.`
+
+In cart > urls.py
+
+```python
+    path('add/<id>', views.add_to_cart, name="add_to_cart"), # >'add/<id>/'
+    path('adjust/<id>', adjust_cart, name="adjust_cart") # 'adjust/<id>/'
+```
+
+
+
+## Searching for a product
+
+Start a new app and add it to the INSTALLED_APPS
+
+`python3 manage.py startapp search`
+
+In search views.py create do_search select2-results__option--highlighted
+
+```python
+from django.shortcuts import render
+from products.models import Product
+
+# Create your views here.
+def do_search(request):
+    products = Products.objects.filter(name_icontains=request.GET['q'])
+    return render(request, "products.html", {"products": products})
+```
+
+We have the model called Product.objects.filter. Filter is a built-in function.
+(name_icontains=request.GET['q']), will get whatever 'q' is returned from the form named 'q'.
+Whatever you type into that form will then be used to filter the products.
+
+In search urls.py register the path and include the path to ecommerce urls.py
+
+```python
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('', views.do_search, name="search")
+]
+```
+
+`path('search/', include('search.urls')),`
+
+In base.html (search is accessible from everywhere on the site), modify the header and add search link
+
+```html
+% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <title>Ecommerce</title>
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.3.7/cerulean/bootstrap.min.css">
+        <link rel="stylesheet" href="{% static 'font-awesome/css/font-awesome.min.css' %}">
+        <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    </head>
+
+    <body>
+        <!-- Fixed masthead -->
+        <nav class="navbar navbar-masthead navbar-default navbar-fixed-top">
+            <div class="container">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
+                        aria-expanded="false" aria-controls="navbar">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="/">Ecommerce</a>
+                </div>
+                <div id="navbar" class="navbar-collapse collapse">
+                    <ul class="nav navbar-nav navbar-right">
+                        {% if user.is_authenticated %}
+                        <li><a href="{% url 'profile' %}">Profile</a></li>
+                        <li><a href="{% url 'logout' %}">Log Out</a></li>
+                        {%  else %}
+                        <li><a href="{% url 'register' %}">Register</a></li>
+                        <li><a href="{% url 'login' %}">Log In</a></li>
+                        {% endif %}
+                        <li>
+                            <a href="{% url 'view_cart' %}">
+                                <i class="fa fa-shipping-cart"></i>Cart
+                                {% if product_count > 0 %}
+                                <label class="badge badge-warning">{{ product_count }}</label>
+                                {% endif %}
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        <h1>{% block page_heading %}{% endblock %}</h1>
+        {% if messages %}
+        <div>
+            {% for message in messages %}
+            {{ message  }}
+            {% endfor %}
+        </div>
+        {% endif %} {% block content %}{% endblock %}
+
+        <!-- Optional JavaScript -->
+        <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+        <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+            integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous">
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+            integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous">
+        </script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+            integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous">
+        </script>
+    </body>
+
+</html>
+```
+
+[Top](#index)
+
+## Styling
+
+Go to https://fontawesome.com/
+Select Start for Free and Download
+Select Download for free for Web. Unzip the file.
+
+In static add font-awesome directory and add css folder to it
+Copy fontawesome.css and fontawesome.min.css from downloaded css file
+
+In static font-awesome directory add fonts folder
+Copy fonts from webfonts to it
+
+In browser check http://127.0.0.1:8000/cart/ - works
+
+In admin add a product.
+
+Check - works
+
+[Top](#index)
+
+## Setting up Stripe
+
+Install Stripe
+
+`pip3 install Stripe`
+
+`pip3 freeze > requirements.txt`
+
+Go to stripe.com and create an account by clicking Start, fill in the form and submit.
+After registering, sign-in and got to dashboard. On the left hand side click Developers.
+Click API keys. In API keys click Reveal test key token.
+
