@@ -14,7 +14,7 @@ class MakePaymentForm(forms.Form):
 	stripe_id = forms.CharField(widget=forms.HiddenInput)
 
 
-	class OrderForm(forms.ModelForm):
+class OrderForm(forms.ModelForm):
 	
 	class Meta:
 		model = Order

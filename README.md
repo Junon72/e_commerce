@@ -901,6 +901,75 @@ It's not visible to people who might be snooping on the webpage.
 Stripe requires an ID, and although the input is added into the form, the user won't actually see it. Django has a widget within forms called HiddenInput.
 This means that something will be inputted into the form, but it will be hidden from the user.
 
+## Checkout views
+
+In checkout views.py add checkout routes
+
+```python
+from django.shortcuts import render, get_object_or_404, reverse
+from django.contrib.auth.decorators import login_required
+from .forms import MakePaymentForm, OrderForm
+from .models import OrderLineItem
+from django.conf import settings
+from django.utils import timezone
+from products.models import Product
+
+import stripe
+
+# Create your views here.
+
+stripe_api_key = settings.STRIPE_SECRET
+
+@login_required()
+def checkout(request):
+    if request.method=="POST":
+        order_form = OrderForm(request.POST)
+        payment_form = MakePaymentForm(request.POST)
+
+        if order_form.is_valid() and payment_form.is_valid():
+            order = order_form.save(commit=False)
+            order.date = timezone.now()
+            order.save
+
+            cart = request.session.get('cart', [])
+            total = 0
+            for id, quantity in cart.items():
+                product = get_object_or_404(Product, pk=id)
+                total += quantity * product.price
+                order_line_item = OrderLineItem(
+                    order = order,
+                    product = product,
+                    quantity = quantity
+                    )
+                order_line_item.save()
+
+            try:
+                customer = stripe.Charge.create(
+                    amount=int(total * 100),
+                    currency="EUR",
+                    description=request.user.email,
+                    card=payment_form.cleaned_data['stripe_id']
+                )
+            except stripe.error.CardError:
+                messages.error(request, "Your card was declined!")
+
+            if customer.paid:
+                messages.error(request, "You have successfully paid")
+                request.session['cart'] = {}
+                return redirect(reverse('products'))
+            else:
+                messages.error(request, "Unable to take payment")
+        else:
+            print(payment_form.errors)
+            messages.error(request, "We were unable to take a payment with that card!")
+    else:
+        payment_form = MakePaymentForm()
+        order_form = OrderForm()
+
+    return render(request, "checkout.html", {"order_form": order_form, "payment_form": payment_form, "publishable": settings.STRIPE_PUBLISHABLE})
+```
+
+
 ## Checkout html
 
 In checkout create urls.py and urls.py create checkout route
@@ -910,7 +979,7 @@ from djangourls import path
 from . import views
 
 urlpaterns = [
-    path('', checkout, name='checkout')
+    path('', views.checkout, name='checkout')
 ]
 ```
 
@@ -918,10 +987,11 @@ In ecommerce urls.py include checkout urls
 
 ```python
 path('checkout/', include('checkout.urls'))
+```
 
 In checkout add a templates folder and checkout.html file in it
 
-```python
+```html
 {% extends "base.html" %}
 {% load static %}
 {% load bootstrap_tags %}
@@ -979,4 +1049,66 @@ In checkout add a templates folder and checkout.html file in it
     </div>
 </form>
 {% endblock %}
+```
+
+Add a block head_js which contains JavaScript that Stripe requires.
+
+```html
+    //<![CDATA[
+        Stripe.publishableKey = '{{ publishable }}';
+    //]]>
+```
+
+Will make the Stripe publishable key available on the page
+In base.html add in the block head_js as well, under the script tags, at the end of head section
+
+```html
+    {% block head_js %}
+    {% endblock head_js %}
+```
+
+The Stripe error display is default none, but if there is error it will display the message! > Stripe js
+
+In cart.html change the checkout button
+
+`href="{% url 'checkout' %}"`
+
+[Top](#index)
+
+## Stripe JS
+
+In static create a new directory js and stripe.js file in it
+
+```js
+$(function() {
+    $("#payment-form").submit(function() {
+        var form = this;
+        var card = {
+            number: $("#id_credit_card_number").val(),
+            expMonth: $("#id_expiry_month").val(),
+            expYear : $("#id_expiry_year").val(),
+            cvc: $("#id_cvv").val()
+        };
+    
+    Stripe.createToken(card, function(status, response) {
+        if (status === 200) {
+            $("#credit-card-errors").hide();
+            $("#id_stripe_id").val(response.id);
+
+            //Prevent the Credit card Details from being submitted to our server
+            $("#id_credit_card_number").removeAttr('name');
+            $("#id_cvv").removeAttr('name');
+            $("#id_expiry_month").removeAttr('name');
+            $("#id_expiry_year").removeAttr('name');
+
+            form.submit();
+        } else {
+            $("#stripe-error-message").text(response.error.message);
+            $("#credit-card-errors").show();
+            $("#validate_card_btn").attr("disabled", false);
+        }
+    });
+    return false;
+    });
+});
 ```
