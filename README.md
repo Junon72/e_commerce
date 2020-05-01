@@ -755,3 +755,228 @@ Go to stripe.com and create an account by clicking Start, fill in the form and s
 After registering, sign-in and got to dashboard. On the left hand side click Developers.
 Click API keys. In API keys click Reveal test key token.
 
+In settings.py set path for Publishable key and Secret key
+
+STRIPE_PUBLISHABLE = os.getenv('STRIPE_PUBLISHABLE')
+STRIPE_SECRET = os.getenv('STRIPE_SECRET')
+
+Create env.py in root directory and add the kay values there
+
+```python
+import os
+
+os.environ.setdefault("STRIPE_PUBLISHABLE", "...")
+os.environ.setdefault("STRIPE_SECRET", "...")
+```
+
+## Checkout app
+
+create a checkout app and add it to INSTALLED_APPS
+
+`python3 manage.py startapp checkout`
+
+`'checkout',`
+
+In checkout > models.py create a model for orders and order line item
+
+```python
+from django.db import models
+from product.models import Product
+
+# Create your models here.
+
+class Order(models.Model):
+    full_name - models.CharField(max_length=50, blank=False)
+    phone_number = models.CharField(max_length=20, blank=False)
+    country = models.CharField(max_length=40, blank=False)
+    postcode = models.CharField(max_length=20, blank=True)
+    town_or_city = models.CharField(max_length=40, blank=False)
+    street_address1 = models.CharField(max_length=40, blank=False)
+    street_address2 = models.CharField(max_length=40, blank=False)
+    county = models.CharField(max_length=40, blank=False)
+    date = models.DateField()
+
+    def __str__(self):
+        return"{0}-{1}-{2}".format(self.id, self.date, self.full_name)
+
+
+class OrderLineItem(models.Model):
+    order = models.ForeignKey(Order, null=False, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, null=False, on_delete=models.PROTECT)
+    quantity = models.IntegerField(blank=False)
+
+    def __str__(self):
+        return "{0} {1} @ {2}".format(self.quantity, 
+                                self.product.name, self.product.price)
+```
+
+Register models in checkout admin.py
+
+```python
+from django.contrib import admin
+from .models import Order, OrderLineItem
+
+# Register your models here.
+class OrderLineAdminInline(admin.TabularInline):
+    model = OrderLineItem
+
+ class OrderAdmin(admin.ModelAdmin):
+     inlines = (OrderLineAdminInline, )
+
+admin.siteregister(Order, OrderAdmin)
+```
+
+TabularInline subclass defines the template used to render the Order in the admin interface. StackInline is another option.
+
+More about [models](https://docs.djangoproject.com/en/3.0/topics/db/models/) and [registering models in admin](https://docs.djangoproject.com/en/3.0/ref/contrib/admin/)
+
+Migrate the app
+
+`python3 manage.py makemigrations checkout`
+
+`python3 manage.py migrate checkout`
+
+**Error:**
+
+`TypeError: __init__() missing 1 required positional argument: 'on_delete'`
+
+Since Django 2.0 the ForeignKey field requires two positional arguments:
+
+the model to map to
+the on_delete argument
+categorie = models.ForeignKey('Categorie', on_delete=models.PROTECT)
+Here are some methods can used in on_delete
+
+CASCADE
+Cascade deletes. Django emulates the behavior of the SQL constraint ON DELETE CASCADE and also deletes the object containing the ForeignKey
+
+PROTECT
+Prevent deletion of the referenced object by raising ProtectedError, a subclass of django.db.IntegrityError.
+
+DO_NOTHING
+Take no action. If your database backend enforces referential integrity, this will cause an IntegrityError unless you manually add an SQL ON DELETE constraint to the database field.
+
+you can find more about on_delete by reading the [documentation](https://docs.djangoproject.com/en/3.0/topics/db/examples/many_to_one/).
+
+**Error:**
+
+`IndentationError: unindent does not match any outer indentation level`
+
+VSCode added a space front of the line 8 and 9
+
+## Checkout forms
+
+In checkout create forms.py and a forms for customers to purchase our products.
+
+```python
+from django import forms
+from .models import Order
+
+class MakePaymentForm(forms.Form):
+    """Payment form allows the user to pay with a credit card"""
+
+    MONTH_CHOICES = [(i, i) for i in range(1, 12)]
+    YEAR_CHOICES = [(i, i) for i in range(2019, 2036)]
+
+    credit_card_number = forms.CharField(label='Credit card number', required=False)
+    cvv = forms.CharField(label='Security code (CVV)', required=False)
+    expiry_month = forms.ChoiceField(label='Month', choices=MONTH_CHOICES, required=False)
+    expiry_year = forms.ChoiceField(label='Year', choices=YEAR_CHOICES, required=False)
+    stripe_id = forms.CharField(widget=forms.HiddenInput)
+
+
+    class OrderForm(forms.ModelForm):
+
+    class Meta:
+        model = Order
+        fields = (
+            'full_name', 'phone_number', 'country', 'postcode',
+            'town_or_city', 'street_address1', 'street_address2',
+            'county'
+        )
+```
+
+Stripe will deal with the encryption of the credit card details through Stripe's JavaScript. Therefore it is possible to do required=false here in Django forms so that the plain text is not transmitted through the browser making it more secure.
+It's not visible to people who might be snooping on the webpage.
+Stripe requires an ID, and although the input is added into the form, the user won't actually see it. Django has a widget within forms called HiddenInput.
+This means that something will be inputted into the form, but it will be hidden from the user.
+
+## Checkout html
+
+In checkout create urls.py and urls.py create checkout route
+
+```python
+from djangourls import path
+from . import views
+
+urlpaterns = [
+    path('', checkout, name='checkout')
+]
+```
+
+In ecommerce urls.py include checkout urls
+
+```python
+path('checkout/', include('checkout.urls'))
+
+In checkout add a templates folder and checkout.html file in it
+
+```python
+{% extends "base.html" %}
+{% load static %}
+{% load bootstrap_tags %}
+
+{% block head_js %}
+<script type="text/javascript" src="https://js.stripe.com/v2/"></script>
+<script type="text/javascript">
+    //<![CDATA[
+        Stripe.publishableKey = '{{ publishable }}';
+    //]]>
+</script>
+<script type="text/javascript" src="{% static 'js/stripe.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="row row-flex">
+    {% for item in cart_items %}
+        <div class="col-xs-10 col-xs-offset-1 col-sm-offset-0 col-sm-6 col-md-4 display panel panel-default">
+            <div class="panel-body">
+                <div class="product" style="background-image: url('{{ MEDIA_URL }}{{ item.product.image }}')"></div>
+
+                <div class="caption">
+                    <h3>{{ item.product.name }}</h3>
+                    <p class="product-description">{{ item.product.descriptio }}</p>
+                    <p>{{ item.quantity }}</p>
+                    <p>item.product.price</p>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+<div class="row">
+    <p>Total</p>
+    <p><span class="glyphicon glyphicon-euro" aria-hidden="true"></span>{{ total }}</p>
+</div>
+
+<form role="form" method="post" id="payment-form" action="{% url 'checkout' %}">
+    <legend>Payment Details</legend>
+
+    <div id="credit-card-errors" style="display: none;">
+        <div class="alert-message block-message error" id="stripe-error-message"></div>
+    </div>
+
+    <div class="form-group col-md-6">
+        {{ order_form | as_bootstrap }}
+    </div>
+
+    <div class="form-group col-md-6">
+        {{ payment_form | as_bootstrap }}
+    </div>
+
+    {% csrf_token %}
+    <div class="form-group col-md-12">
+        <input class=" btn btn-primary" id="submit_payment_btn" name="commit" type="submit" value="Submit Payment">
+    </div>
+</form>
+{% endblock %}
+```
