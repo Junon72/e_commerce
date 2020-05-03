@@ -1626,6 +1626,14 @@ TypeError: a bytes-like object is required, not 'str''
 
 Copy all the settings from env.py file to Heroku Config vars
 
+Create a Procfile
+
+`echo web:gunicorn django_blog.wsgi:application > Procfile`
+
+Add `'this-ecommerce.herokuapp.com'` to ALLOWED_HOSTS
+
+Git all
+
 In Deploy add GitHub connect the Github repo and Deploy branch
 
 Heroku error:
@@ -1634,3 +1642,4 @@ Heroku error:
 NoReverseMatch at /
 Reverse for 'register' not found. 'register' is not a valid view function or pattern name.
 ```
+

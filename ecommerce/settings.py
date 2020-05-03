@@ -159,8 +159,7 @@ if os.path.exists('env.py'):
     print("Local Static Files in use")
     MEDIA_URL = '/media/'
     STATIC_URL = '/static/'
-    STRIPE_PUBLISHABLE = os.getenv('STRIPE_PUBLISHABLE')
-    STRIPE_SECRET = os.getenv('STRIPE_SECRET')
+
 
 
 ## if env.py does not exist, use AWS S3 Static and Media Files
@@ -187,6 +186,8 @@ else:
     STATICFILES_STORAGE = 'custom_storages.StaticStorage'
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+STRIPE_PUBLISHABLE = os.getenv('STRIPE_PUBLISHABLE')
+STRIPE_SECRET = os.getenv('STRIPE_SECRET')
 
 # # AWS Settings
 # AWS_STORAGE_BUCKET_NAME = 'jussin-ecommerce'
