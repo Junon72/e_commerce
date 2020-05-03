@@ -1628,3 +1628,9 @@ Copy all the settings from env.py file to Heroku Config vars
 
 In Deploy add GitHub connect the Github repo and Deploy branch
 
+Heroku error:
+
+```txt
+NoReverseMatch at /
+Reverse for 'register' not found. 'register' is not a valid view function or pattern name.
+```
