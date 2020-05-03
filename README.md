@@ -1610,4 +1610,14 @@ script:
   - SECRET_KEY="whatever" ./manage.py test
 ```
 
-Go to Travis
+Go to Travis and check the build.
+
+Build error:
+
+```bash
+with msg '  File "/home/travis/build/Junon72/e_commerce/ecommerce/settings.py", line 101, in <module>
+    DATABASES = {'default': dj_database_url.parse(os.environ.get('DATABASE_URL'))}
+  File "/home/travis/virtualenv/python3.7.1/lib/python3.7/site-packages/dj_database_url.py", line 80, in parse
+    if '?' in path and not url.query:
+TypeError: a bytes-like object is required, not 'str''
+```
