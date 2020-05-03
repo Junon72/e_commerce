@@ -155,63 +155,62 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 ## if env.py exists use local Static and Media Files
 
-if os.path.exists('env.py'):
-    print("Local Static Files in use")
-    MEDIA_URL = '/media/'
-    STATIC_URL = '/static/'
+# if os.path.exists('env.py'):
+#     print("Local Static Files in use")
+#     MEDIA_URL = '/media/'
+#     STATIC_URL = '/static/'
+    
+# ## if env.py does not exist, use AWS S3 Static and Media Files
 
+# else:
+#     print("AWS S3 Static File in use.")
+#     # AWS Settings
+#     AWS_STORAGE_BUCKET_NAME = 'jussin-ecommerce'
+#     AWS_S3_REGION_NAME ='eu-north-1'
+#     AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+#     AWS_SECRET_ACCESS_KEY = os.os.getenv("AWS_SECRET_ACCESS_KEY")
+#     AWS_DEFAULT_ACL = 'public-read'
+#     AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
+#     AWS_S3_OBJECT_PARAMETERS = {
+#     'Expires': 'Thu, 31 Dec 2099 20:00:00 GMT',
+#     'CacheControl': 'max-age=94608000'
+#     }
 
+#     # S3 Static File Settings
+#     MEDIAFILES_LOCATION = 'media'
+#     MEDIA_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, MEDIAFILES_LOCATION)
+#     STATICFILES_LOCATION = 'static'
+#     STATIC_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, STATICFILES_LOCATION)
+#     STATICFILES_STORAGE = 'custom_storages.StaticStorage'
+#     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-## if env.py does not exist, use AWS S3 Static and Media Files
+# AWS Settings
+AWS_STORAGE_BUCKET_NAME = 'jussin-ecommerce'
+AWS_S3_REGION_NAME ='eu-north-1'
+AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
+AWS_DEFAULT_ACL = 'public-read'
+AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
+AWS_S3_OBJECT_PARAMETERS = {
+'Expires': 'Thu, 31 Dec 2099 20:00:00 GMT',
+'CacheControl': 'max-age=94608000'
+}
 
-else:
-    print("AWS S3 Static File in use.")
-    # AWS Settings
-    AWS_STORAGE_BUCKET_NAME = 'jussin-ecommerce'
-    AWS_S3_REGION_NAME ='eu-north-1'
-    AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
-    AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
-    AWS_DEFAULT_ACL = 'public-read'
-    AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
-    AWS_S3_OBJECT_PARAMETERS = {
-    'Expires': 'Thu, 31 Dec 2099 20:00:00 GMT',
-    'CacheControl': 'max-age=94608000'
-    }
-
-    # S3 Static File Settings
-    MEDIAFILES_LOCATION = 'media'
-    MEDIA_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, MEDIAFILES_LOCATION)
-    STATICFILES_LOCATION = 'static'
-    STATIC_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, STATICFILES_LOCATION)
-    STATICFILES_STORAGE = 'custom_storages.StaticStorage'
-    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
-STRIPE_PUBLISHABLE = os.getenv('STRIPE_PUBLISHABLE')
-STRIPE_SECRET = os.getenv('STRIPE_SECRET')
-
-# # AWS Settings
-# AWS_STORAGE_BUCKET_NAME = 'jussin-ecommerce'
-# AWS_S3_REGION_NAME ='eu-north-1'
-# AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
-# AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
-# AWS_DEFAULT_ACL = 'public-read'
-# AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
-# AWS_S3_OBJECT_PARAMETERS = {
-# 'Expires': 'Thu, 31 Dec 2099 20:00:00 GMT',
-# 'CacheControl': 'max-age=94608000'
-# }
-
-# # S3 Static File Settings
-# MEDIAFILES_LOCATION = 'media'
-# MEDIA_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, MEDIAFILES_LOCATION)
-# print(MEDIA_URL)
-# STATICFILES_LOCATION = 'static'
-# STATIC_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, STATICFILES_LOCATION)
-# STATICFILES_STORAGE = 'custom_storages.StaticStorage'
+# S3 Static File Settings
+MEDIAFILES_LOCATION = 'media'
+MEDIA_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, MEDIAFILES_LOCATION)
+print(MEDIA_URL)
+STATICFILES_LOCATION = 'static'
+STATIC_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, STATICFILES_LOCATION)
+STATICFILES_STORAGE = 'custom_storages.StaticStorage'
 
 STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'), )
 
 MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
+
+STRIPE_PUBLISHABLE = os.getenv('STRIPE_PUBLISHABLE')
+STRIPE_SECRET = os.getenv('STRIPE_SECRET')
+
 
 if os.path.exists('env.py'):
     EMAIL_HOST_USER = os.getenv("EMAIL_ADDRESS")
