@@ -1,5 +1,9 @@
 # e-commerce
 
+[![Build Status](https://travis-ci.com/Junon72/e_commerce.svg?branch=master)](https://travis-ci.com/Junon72/e_commerce)
+
+Django e-commerce site
+
 ## index
 
 1. [Setting up VSCode](#Setting-up-VSCode)
@@ -8,11 +12,21 @@
 4. [Create apps home and products](#Create-apps-home-and-products)
 5. [Creating and testing product models](#Creating-and-testing-product-models)
 6. [Products views and urls](#Products-views-and-urls)
-
-
-
-
-
+7. [Storing Shopping Cart Items In A Session](#Storing-Shopping-Cart-Items-In-A-Session)
+8. [Searching for a product](#Searching-for-a-product)
+9. [Styling](#Styling)
+10. [Setting up Stripe](#Setting-up-Stripe)
+11. [Checkout app](#Checkout-app)
+12. [Checkout forms](#Checkout-forms)
+13. [Checkout views](#Checkout-views)
+14. [Checkout html](#Checkout-html)
+15. [Stripe JS](#Stripe-JS)
+16. [Deploy to Heroku](#Deploy-to-Heroku)
+17. [AWS account and bucket](#AWS-account-and-bucket)
+18. [Adding S3 to Django](#Adding-S3-to-Django)
+19. [Adding media to S3](#Adding-media-to-S3)
+20. [Adding icons](#Adding-icons)
+21. [Travis Continuous Integration](#Travis-Continuous-Integration)
 
 ## Setting up VSCode
 
@@ -611,7 +625,7 @@ In cart > urls.py
     path('adjust/<id>', adjust_cart, name="adjust_cart") # 'adjust/<id>/'
 ```
 
-
+[Top](#index)
 
 ## Searching for a product
 
@@ -780,6 +794,8 @@ os.environ.setdefault("STRIPE_PUBLISHABLE", "...")
 os.environ.setdefault("STRIPE_SECRET", "...")
 ```
 
+[Top](#index)
+
 ## Checkout app
 
 create a checkout app and add it to INSTALLED_APPS
@@ -875,7 +891,9 @@ you can find more about on_delete by reading the [documentation](https://docs.dj
 
 VSCode added a space front of the line 8 and 9
 
-## Checkout forms
+[Top](#index)
+
+## Checkout forms
 
 In checkout create forms.py and a forms for customers to purchase our products.
 
@@ -911,6 +929,8 @@ Stripe will deal with the encryption of the credit card details through Stripe's
 It's not visible to people who might be snooping on the webpage.
 Stripe requires an ID, and although the input is added into the form, the user won't actually see it. Django has a widget within forms called HiddenInput.
 This means that something will be inputted into the form, but it will be hidden from the user.
+
+[Top](#index)
 
 ## Checkout views
 
@@ -981,8 +1001,9 @@ def checkout(request):
     return render(request, "checkout.html", {"order_form": order_form, "payment_form": payment_form, "publishable": settings.STRIPE_PUBLISHABLE})
 ```
 
+[Top](#index)
 
-## Checkout html
+## Checkout html
 
 In checkout create urls.py and urls.py create checkout route
 
@@ -1125,6 +1146,8 @@ $(function() {
 });
 ```
 
+[Top](#index)
+
 ## Deploy to Heroku
 
 Got to heroku and create a new app with  unique name
@@ -1218,7 +1241,9 @@ Run and check the site
 ./manage.py runserver 127.0.0.1:8000
 ```
 
-Getting an AWS account
+[Top](#index)
+
+## AWS account and bucket
 
 Sign in to AWS, go to the Services and look for s3, click
 
@@ -1448,7 +1473,9 @@ In borwser developer tools > Networks show that the resources are loaded twice.
 200 | GET | cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js
 ```
 
-## Adding media to S3
+[Top](#index)
+
+## Adding media to S3
 
 In rootdirectory create custom_storages.py file
 
@@ -1516,12 +1543,14 @@ This XML file does not appear to have any style information associated with it. 
 <Error>
 <Code>AccessDenied</Code>
 <Message>Access Denied</Message>
-<RequestId>CA203C4DF6B5F466</RequestId>
+<RequestId>....</RequestId>
 <HostId>
-fwU0Q8mGggBiYYuYI8l97r8FABSW10pCTQ8SgYSrqraBcY5krNkRuHmLZpZKJpDsN7B9PNcHF8M=
+....
 </HostId>
 </Error>
 ```
+
+[Top](#index)
 
 ## Adding icons
 
@@ -1539,7 +1568,37 @@ In base.html add icons to the navigation buttons
 
 Theses icons are loaded from S3 static folder!
 
+In .gitignore add files and items that don't need to be added to the GitHub anymore, since thay are stored in S3
 
+```txt
+*.png
+static/
+media/
+```
 
+**Issue:**
 
+Font awesome fonts do not appear as they should, despite
 
+```bash
+Request URL:https://jussin-ecommerce.s3.amazonaws.com/static/font-awesome/css/fontawesome.min.css
+Request Method:GET
+Status Code:
+200
+Version:HTTP/1.1
+Referrer Policy:no-referrer-when-downgrade
+```
+
+[Top](#index)
+
+## Travis Continuous Integration
+
+Go to your [Travis account repositories](#https://travis-ci.com/account/repositories)
+
+- click e_commers repository from Github
+- click built and change the FORMAT to markdown and copy the RESULT
+- Got top of your README.md and paste the Build Status link there (usually under the title)
+
+In root directory create a file .travis.yml
+
+```
