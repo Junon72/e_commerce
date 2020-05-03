@@ -1,6 +1,7 @@
-from django.shortcuts import render, get_object_or_404, reverse
+from django.shortcuts import render, get_object_or_404, reverse, redirect
 from django.contrib.auth.decorators import login_required
 from .forms import MakePaymentForm, OrderForm
+from django.contrib import messages
 from .models import OrderLineItem
 from django.conf import settings
 from django.utils import timezone
@@ -10,9 +11,9 @@ import stripe
 # Create your views here.
 
 stripe.api_key = settings.STRIPE_SECRET
-print(stripe.api_key)
+
 publishable = settings.STRIPE_PUBLISHABLE
-print(publishable)
+
 
 @login_required()
 def checkout(request):
@@ -23,7 +24,7 @@ def checkout(request):
 		if order_form.is_valid() and payment_form.is_valid():
 			order = order_form.save(commit=False)
 			order.date = timezone.now()
-			order.save
+			order.save()
 			
 			cart = request.session.get('cart', [])
 			total = 0
@@ -35,6 +36,7 @@ def checkout(request):
 					product = product,
 					quantity = quantity
 					)
+				print(order_line_item)
 				order_line_item.save()
 
 			try:

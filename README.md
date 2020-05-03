@@ -65,6 +65,12 @@ Install helpers for writing code
 
 `pip3 install pep8 autopep8 pylint`
 
+[pep8](#https://pypi.org/project/pep8/)
+
+[autopep8](#https://pypi.org/project/autopep8/)
+
+[pylint](#https://pypi.org/project/pylint/)
+
 Create requirements.txt file
 
 `pip3 freeze > requirements.txt`
@@ -140,6 +146,8 @@ static
 Install bootstrap for forms
 
 `pip3 install django-forms-bootstrap`
+
+[django-forms-bootstrap](#https://pypi.org/project/django-forms-bootstrap/)
 
 In settings.py add the app and bootstrap to INSTALLED_APPS and create AUTHENTICATION_BACKENDS path to backends.py.
 Add the templates path to TEMPLATES > DIRS.
@@ -287,8 +295,9 @@ Install Pillow to allow uploading of images.
 **When working with Mac and Django3 first `brew install libjpeg`
 
 `pip3 install Pillow`
-
 `pip3 freeze > requirements.txt`
+
+[Pillow](#https://pypi.org/project/Pillow/)
 
 Migrate products app
 
@@ -725,7 +734,7 @@ In base.html (search is accessible from everywhere on the site), modify the head
 
 ## Styling
 
-Go to https://fontawesome.com/
+Go to [Fonawesome](#https://fontawesome.com/)
 Select Start for Free and Download
 Select Download for free for Web. Unzip the file.
 
@@ -750,6 +759,8 @@ Install Stripe
 `pip3 install Stripe`
 
 `pip3 freeze > requirements.txt`
+
+[Stripe](#https://stripe.com/en-nl?utm_campaign=paid_brand-NL_en_Search_Brand_Stripe-868421448&utm_medium=cpc&utm_source=google&ad_content=301648723572&utm_term=stripe&utm_matchtype=e&utm_adposition=&utm_device=c&gclid=Cj0KCQjw17n1BRDEARIsAFDHFezdw8qJQOkrjtHPQQT0siWFBXgnlmjiSNUMJixTJgAtkFb_TCadyYkaAq5UEALw_wcB)
 
 Go to stripe.com and create an account by clicking Start, fill in the form and submit.
 After registering, sign-in and got to dashboard. On the left hand side click Developers.
@@ -909,6 +920,7 @@ In checkout views.py add checkout routes
 from django.shortcuts import render, get_object_or_404, reverse
 from django.contrib.auth.decorators import login_required
 from .forms import MakePaymentForm, OrderForm
+from django.contrib import messages
 from .models import OrderLineItem
 from django.conf import settings
 from django.utils import timezone
@@ -929,7 +941,7 @@ def checkout(request):
         if order_form.is_valid() and payment_form.is_valid():
             order = order_form.save(commit=False)
             order.date = timezone.now()
-            order.save
+            order.save()
 
             cart = request.session.get('cart', [])
             total = 0
@@ -1089,7 +1101,7 @@ $(function() {
             expYear : $("#id_expiry_year").val(),
             cvc: $("#id_cvv").val()
         };
-    
+
     Stripe.createToken(card, function(status, response) {
         if (status === 200) {
             $("#credit-card-errors").hide();
@@ -1112,3 +1124,422 @@ $(function() {
     });
 });
 ```
+
+## Deploy to Heroku
+
+Got to heroku and create a new app with  unique name
+
+`this-ecommerce`
+
+`EU`
+
+In Resources add a database
+
+`Postgres`
+
+[Heroku Postgres](#https://www.heroku.com/postgres)
+
+In modal, choose `Hobby Dev -Free` and click Provision
+
+In Settings Config Vars copy the DATABASE_URL value
+
+In Terminal install dj-database-url, psycopg2-binary and gunicorn and add them to the requirements file
+Create a Procfile
+
+```bash
+pip3 install dj-database-url
+pip3 install gunicorn
+pip3 install psycopg2-binary
+pip3 freeze > requirements.txt
+echo web: gunicorn ecommerce.wsgi:application > Procfile
+```
+
+[dj-database-url](#https://pypi.org/project/dj-database-url/)
+
+[Gunicorn](#https://gunicorn.org/)
+
+[psycopg2-binary](#https://pypi.org/project/psycopg2-binary/)
+
+In settings.py import dj-database-url
+
+```python
+import os
+import dj_database_url
+from os import path
+
+if path.exists("env.py"):
+    import env
+    print('env imported')
+```
+
+Comment out DATABASES and set the Heroku DATABASE_URL and SECRET_KEY paths
+
+```python
+SECRET_KEY = os.environ.get("SECRET_KEY")
+
+if "DATABASE_URL" in os.environ:
+    DATABASES = {
+        'default': dj_database_url.parse(os.environ.get('DATABASE_URL'))
+    }
+else:
+    print("Postgres URL not found, using sqlite instead")
+    DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    }
+}
+```
+
+In anv.py add the DATABASE_URL and SECRET_KEY
+
+```python
+os.environ.setdefault("DATABASES_URL", "postgres://...")
+os.environ.setdefault("SECRET_KEY", "...")
+```
+
+In Terminal migrate
+
+```bash
+python3 manage.py makemigrations
+python3 manage.py migrate
+```
+
+Create a new superuser
+
+```bash
+python3 manage.py createsuperuser
+Username : superselleri/SS
+```
+
+Run and check the site
+
+```bash
+./manage.py runserver 127.0.0.1:8000
+```
+
+Getting an AWS account
+
+Sign in to AWS, go to the Services and look for s3, click
+
+In Amazon S3 create a bucket
+
+Name the bucket (jussin-ecommerce) and choose the region. Unselect 'Block all public access' and click Create bucket
+
+Click the created bucket to open it
+
+Go to Properties and select Static website hosting
+
+Select Use this bucket to host a website
+
+In input fields write index.html and error.html and save
+
+Go to Permissions and select CORS configurations
+
+In CORS editor add CORS configurations and Save
+
+```bash
+<CORSConfiguration>
+<CORSRule>
+<AllowedOrigin>*</AllowedOrigin>
+<AllowedMethod>GET</AllowedMethod>
+<MaxAgeSeconds>3000</MaxAgeSeconds>
+<AllowedHeader>Authorization</AllowedHeader>
+</CORSRule>
+</CORSConfiguration>
+```
+
+Go to Bucket policy and add the policy into the editor field an Save
+
+Under the headline reads `Bucket policy editor ARN: arn:aws:s3:::jussin-ecommerce` telling what to put in Resources field
+
+**Leave `/*` on place**
+
+```bash
+{
+    "Version":"2012-10-17",
+    "Statement":[{
+      "Sid":"PublicReadGetObject",
+        "Effect":"Allow",
+      "Principal": "*",
+      "Action":["s3:GetObject"],
+      "Resource":["arn:aws:s3:::jussin-ecommerce/*"
+      ]
+    }
+  ]
+}
+```
+
+The policy format can be found in [django-storages S3 IAM Policy section](#https://django-storages.readthedocs.io/en/latest/backends/amazon-S3.html)
+
+**Never mind the warning 'This bucket has public access', the bucket is meant to be public!**
+
+Go to IAM (you can go to the Main page, search for IAM, in IAM you can see a pin on the Navigation bar, click the pin and choose the services you want pinned in your navbar.)
+
+On left side menu select Groups to create a new group `jussin-ecommerce-group` and click Next step > Next step again > Create group
+
+On left side menu select Policies to create a new policy:
+
+- select JASON
+- click Import a managed policy
+- search for S3
+- select `AmazonS3FullAccess` and click Import
+
+```bash
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": "s3:*",
+            "Resource": "*"
+        }
+    ]
+}
+```
+
+- replace `"Resource": "*"` with a list `"Resource": ["arn:aws:s3:::jussin-ecommerce", "arn:aws:s3:::jussin-ecommerce/*"]`
+- click Review policy and name the policy `jussin-ecommerce-policy`. Click Create policy
+
+**Never mind the warning!**
+
+Add the policy to the group:
+
+- select Groups and open jussin-ecommerce-group
+- select Permissions and click Attach policy
+- in search field look for jussin-ecommerce-policy, select it and click Attach policy
+
+On left side menu select Users and add a user:
+
+- click Add user
+- name the user `jussin-ecommerce-user` and give the user `Programmatic access`
+- click Next: Permissions and select `jussin-ecommerce-group`
+- click next: Tags, Next: Review and Create user
+
+```bash
+Success
+You successfully created the users shown below. You can view and download user security credentials. You can also email users instructions for signing in to the AWS Management Console. This is the last time these credentials will be available to download. However, you can create new credentials at any time.
+
+Users with AWS Management Console access can sign-in at: https://822069986616.signin.aws.amazon.com/console
+```
+
+**Download the credentials.csv file to some secure place, you won't be able to do it again, and if it is lost you will have to create a new user**
+
+Go back to S£ and open the bucket and test to upload a file:
+
+- click Upload and choose a file to upload. select and click Upload on the left down corner.
+- Click the image to open overview. At the bottom you will see the image url.
+
+[Top](#index)
+
+## Adding S3 to Django
+
+In Terminal install django-storages and boto3 to allow Django to connect with S3
+
+```bash
+pip3 install django-storages
+pip3 install boto3
+pip3 freeze > requirements.txt
+```
+
+[Boto 3](#https://boto3.amazonaws.com/v1/documentation/api/latest/index.html)
+[Django Storages S3](#https://django-storages.readthedocs.io/en/latest/)
+
+**Issue**
+
+```bash
+pip3 install gunicorn
+Collecting gunicorn
+  Using cached gunicorn-20.0.4-py2.py3-none-any.whl (77 kB)
+Requirement already satisfied: setuptools>=3.0 in ./foo/lib/python3.7/site-packages (from gunicorn) (41.2.0)
+Could not build wheels for setuptools, since package 'wheel' is not installed.
+Installing collected packages: gunicorn
+Successfully installed gunicorn-20.0.4
+
+pip3 install psycopg2-binary
+Collecting psycopg2-binary
+  Using cached psycopg2_binary-2.8.5-cp37-cp37m-macosx_10_6_intel.macosx_10_9_intel.macosx_10_9_x86_64.macosx_10_10_intel.macosx_10_10_x86_64.whl (1.5 MB)
+Installing collected packages: psycopg2-binary
+Successfully installed psycopg2-binary-2.8.5
+
+pip3 install django-storages
+Collecting django-storages
+  Downloading django_storages-1.9.1-py2.py3-none-any.whl (42 kB)
+Requirement already satisfied: Django>=1.11 in ./foo/lib/python3.7/site-packages (from django-storages) (3.0.5)
+Requirement already satisfied: sqlparse>=0.2.2 in ./foo/lib/python3.7/site-packages (from Django>=1.11->django-storages) (0.3.1)
+Requirement already satisfied: pytz in ./foo/lib/python3.7/site-packages (from Django>=1.11->django-storages) (2020.1)
+Requirement already satisfied: asgiref~=3.2 in ./foo/lib/python3.7/site-packages (from Django>=1.11->django-storages) (3.2.7)
+Could not build wheels for Django, since package 'wheel' is not installed.
+Could not build wheels for sqlparse, since package 'wheel' is not installed.
+Could not build wheels for pytz, since package 'wheel' is not installed.
+Could not build wheels for asgiref, since package 'wheel' is not installed.
+Installing collected packages: django-storages
+Successfully installed django-storages-1.9.1
+```
+
+Instruction to install [Wheel and convert egg.'s to wheels](#https://wheel.readthedocs.io/en/stable/user_guide.html)
+
+```bash
+pip3 install wheel
+pip3 freeze > requirements.txt
+```
+
+In settings.py add django storages to the INSTALLED_APPS as 'storages' and add the AWS and Boto3 vars and paths
+
+```python
+    'storages'
+
+AWS_S3_OBJECT_PARAMETERS = {
+    'Expires': 'Thu, 31 Dec 2099 20:00:00 GMT',
+    'CacheControl': 'max-age=94608000'
+}
+
+AWS_STORAGE_BUCKET_NAME = 'jussin-ecommerce'
+AWS_S3_REGION_NAME ='eu-north-1'
+AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
+
+AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
+
+STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+```
+
+In env.py add the AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY values.
+The values can be found in the credentials.csv file you downloaded from AWS after adding the User in IAM.
+
+```python
+os.environ.setdefault("AWS_ACCESS_KEY_ID", "...")
+os.environ.setdefault("AWS_SECRET_ACCESS_KEY", "...")
+```
+
+In Terminal do collectstatic
+
+```bash
+python3 manage.py collectstatic
+env imported
+/e-commerce/foo/lib/python3.7/site-packages/storages/backends/s3boto3.py:341: UserWarning: The default behavior of S3Boto3Storage is insecure and will change in django-storages 1.10. By default files and new buckets are saved with an ACL of 'public-read' (globally publicly readable). Version 1.10 will default to using the bucket's ACL. To opt into the new behavior set AWS_DEFAULT_ACL = None, otherwise to silence this warning explicitly set AWS_DEFAULT_ACL.
+  "The default behavior of S3Boto3Storage is insecure and will change "
+
+You have requested to collect static files at the destination
+location as specified in your settings.
+
+This will overwrite existing files!
+Are you sure you want to do this?
+
+Type 'yes' to continue, or 'no' to cancel: yes
+
+149 static files copied.
+```
+
+Run the application to test it
+
+`./manage.py runserver 127.0.0.1:8000`
+
+More about [collect static and staic files in Django](#https://docs.djangoproject.com/en/3.0/ref/contrib/staticfiles/)
+
+**Issue perhaps**
+
+In borwser developer tools > Networks show that the resources are loaded twice.
+
+```bash
+200 | GET | jussin-ecommerce.s3.amazonaws.com/font-awesome/css/fontawesome.min.css
+200 | GET | jussin-ecommerce.s3.amazonaws.com/font-awesome/css/fontawesome.min.css
+200 | GET | cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js
+200 | GET | cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js
+```
+
+## Adding media to S3
+
+In rootdirectory create custom_storages.py file
+
+```python
+from django.conf. import settings
+from storages.backends.s3boto3 import S3Boto3Storage
+
+class StaticStorage(S3Boto3Storage):
+	location = settings.STATICFILES_LOCATION
+```
+
+In settings.py modify MEDIA_URL path and add STATICFILES_LOCATION path and update STATICFILES_STORAGE path according to new class that was created.accountform
+
+Add MEDIAFILES_LOCATION and DEFAULT_FILE_STORAGE paths
+
+```python
+STATICFILES_LOCATION = 'static'
+STATICFILES_STORAGE = 'custom_storages.StaticStorage'
+
+MEDIAFILES_LOCATION = 'media'
+DEFAULT_FILE_STORAGE = 'custom_storages.MediaStorage'
+
+MEDIA_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, MEDIAFILES_LOCATION)
+```
+
+Now if we do collectstatic, we will see that it will collect all the static again, but this time, it's going to put it into a static directory within S3.
+
+```bash
+python3 manage.py collectstatic
+yes
+
+149 static files copied.
+```
+
+Run the application, and check the source in Browser devtools
+
+Open S3 jussin-ecommerce bucket Overview. You should see ststic file now added to the Name list.
+
+- delete admin, css, fonr-awesome,js and the test image.
+
+In custome_storages.py add a class to store media
+
+**Issue:**
+
+Not getting media file in S3 after adding a product.
+The image goes to the local media. Browser message in dev tools:
+
+```bash
+Request URL:https://jussin-ecommerce.s3.amazonaws.com/media/images/possu_3hnykXg.jpg
+Request Method:GET
+Remote Address:52.95.171.23:443
+Status Code:
+403
+Version:HTTP/1.1
+Referrer Policy:no-referrer-when-downgrade
+
+{"Response Headers (266 B)":{"headers":[{"name":"Content-Type","value":"application/xml"},{"name":"Date","value":"Sun, 03 May 2020 13:48:39 GMT"},{"name":"Server","value":"AmazonS3"},{"name":"Transfer-Encoding","value":"chunked"},{"name":"x-amz-id-2","value":"wnkfDqqWQxHnVQW3EpRISAAO0lFNK8sG8yF9j7qujG4dku8uos8vEZDcvukXXoUcuaKCWBBndDs="},{"name":"x-amz-request-id","value":"7992C890414EBC5A"}]},"Request Headers (378 B)":{"headers":[{"name":"Accept","value":"image/webp,*/*"},{"name":"Accept-Encoding","value":"gzip, deflate, br"},{"name":"Accept-Language","value":"en-US,en;q=0.5"},{"name":"Cache-Control","value":"no-cache"},{"name":"Connection","value":"keep-alive"},{"name":"Host","value":"jussin-ecommerce.s3.amazonaws.com"},{"name":"Pragma","value":"no-cache"},{"name":"Referer","value":"http://127.0.0.1:8000/"},{"name":"User-Agent","value":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.13; rv:75.0) Gecko/20100101 Firefox/75.0"}]}}
+```
+
+In admin > products, clicking the image link:
+
+```html
+This XML file does not appear to have any style information associated with it. The document tree is shown below.
+
+<Error>
+<Code>AccessDenied</Code>
+<Message>Access Denied</Message>
+<RequestId>CA203C4DF6B5F466</RequestId>
+<HostId>
+fwU0Q8mGggBiYYuYI8l97r8FABSW10pCTQ8SgYSrqraBcY5krNkRuHmLZpZKJpDsN7B9PNcHF8M=
+</HostId>
+</Error>
+```
+
+## Adding icons
+
+In base.html add icons to the navigation buttons
+
+``html
+{% if user.is_authenticated %}
+<li><a href="{% url 'profile' %}"><i class="fa fa-user"></i> Profile</a></li>
+<li><a href="{% url 'logout' %}"><i class="fa fa-sign-out"></i> Log Out</a></li>
+{%  else %}
+<li><a href="{% url 'register' %}"><i class="fa fa-user-plus"></i> Register</a></li>
+<li><a href="{% url 'login' %}"><i class="fa fa-sign-in"></i> Log In</a></li>
+{% endif %}
+```
+
+Theses icons are loaded from S3 static folder!
+
+
+
+
+
