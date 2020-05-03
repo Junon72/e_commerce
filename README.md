@@ -1621,3 +1621,10 @@ with msg '  File "/home/travis/build/Junon72/e_commerce/ecommerce/settings.py", 
     if '?' in path and not url.query:
 TypeError: a bytes-like object is required, not 'str''
 ```
+
+## Heroku Hosting
+
+Copy all the settings from env.py file to Heroku Config vars
+
+In Deploy add GitHub connect the Github repo and Deploy branch
+
