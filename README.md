@@ -1601,4 +1601,13 @@ Go to your [Travis account repositories](#https://travis-ci.com/account/reposito
 
 In root directory create a file .travis.yml
 
+```txt
+language: python
+python:
+  - "3.7"
+install: "pip3 install -r requirements.txt"
+script:
+  - SECRET_KEY="whatever" ./manage.py test
 ```
+
+Go to Travis
