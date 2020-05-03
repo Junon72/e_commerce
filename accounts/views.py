@@ -41,26 +41,25 @@ def login(request):
 
 def register(request):
     """A view that manages the registration form"""
+    if request.user.is_authenticated:
+        return redirect(reverse('index'))
+
     if request.method == 'POST':
         user_form = UserRegistrationForm(request.POST)
         if user_form.is_valid():
             user_form.save()
 
-            user = auth.authenticate(request.POST.get('email'),
+            user = auth.authenticate(username=request.POST.get('username'),
                                      password=request.POST.get('password1'))
 
             if user:
-                auth.login(request, user)
+                auth.login(user=user, request=request)
                 messages.success(request, "You have successfully registered")
-                return redirect(reverse('index'))
-
             else:
                 messages.error(request, "unable to log you in at this time!")
     else:
         user_form = UserRegistrationForm()
-
-    args = {'user_form': user_form}
-    return render(request, 'register.html', args)
+    return render(request, 'register.html', {'user_form': user_form})
 
 @login_required
 def user_profile(request):
