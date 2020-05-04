@@ -27,6 +27,9 @@ Django e-commerce site
 19. [Adding media to S3](#Adding-media-to-S3)
 20. [Adding icons](#Adding-icons)
 21. [Travis Continuous Integration](#Travis-Continuous-Integration)
+22. [Heroku hosting](#Heroku-hosting)
+23. [AWS static files settings](#AWS-static-files-settings)
+
 
 ## Setting up VSCode
 
@@ -1622,6 +1625,8 @@ with msg '  File "/home/travis/build/Junon72/e_commerce/ecommerce/settings.py", 
 TypeError: a bytes-like object is required, not 'str''
 ```
 
+[Top](#index)
+
 ## Heroku Hosting
 
 Copy all the settings from env.py file to Heroku Config vars
@@ -1675,4 +1680,38 @@ x-amz-request-id: 46339BEAE1AE2CC6
 DNT: 1
 Referer: https://this-ecommerce.herokuapp.com/
 User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.129 Safari/537.36
+```
+
+In settings.py added DEFAULT_FILE_STORAGE
+
+`DEFAULT_FILE_STORAGE = 'custom_storages.MediaStorage'`
+
+[Top](#index)
+
+## AWS static files settings
+
+```python
+# AWS Settings
+AWS_STORAGE_BUCKET_NAME = 'jussin-ecommerce'
+AWS_S3_REGION_NAME ='eu-north-1'
+AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
+AWS_DEFAULT_ACL = 'public-read'
+AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
+AWS_S3_OBJECT_PARAMETERS = {
+'Expires': 'Thu, 31 Dec 2099 20:00:00 GMT',
+'CacheControl': 'max-age=94608000'
+}
+
+# S3 Static File Settings
+MEDIAFILES_LOCATION = 'media'
+MEDIA_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, MEDIAFILES_LOCATION)
+DEFAULT_FILE_STORAGE = 'custom_storages.MediaStorage'
+STATICFILES_LOCATION = 'static'
+STATIC_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, STATICFILES_LOCATION)
+STATICFILES_STORAGE = 'custom_storages.StaticStorage'
+
+STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'), )
+
+MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
 ```
