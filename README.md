@@ -1643,3 +1643,36 @@ NoReverseMatch at /
 Reverse for 'register' not found. 'register' is not a valid view function or pattern name.
 ```
 
+Confused file and path naming, mismatch register / registration. Chnaged all references to register - solved.
+
+**Issue S3**
+
+Files do not seem to be connected - images do not render and fontawespme icons do not appear. I can add images in admin, but they are loaded inot local madia. Browser dev tools fontawesome route is S£ though.
+
+Messages:
+
+Browser dev tools
+
+```bash
+Failed to load resource: the server responded with a status of 403 (Forbidden) possu.jpg:1
+
+Request URL: https://jussin-ecommerce.s3.amazonaws.com/static/font-awesome/css/fontawesome.min.css
+Request Method: GET
+Status Code: 200 OK (from disk cache)
+Remote Address: 52.95.169.23:443
+Referrer Policy: no-referrer-when-downgrade
+Accept-Ranges: bytes
+Cache-Control: max-age=94608000
+Content-Length: 57146
+Content-Type: text/css
+Date: Sun, 03 May 2020 20:29:34 GMT
+ETag: "22d85286c513f3d4038c42b486ea1bf6"
+Expires: Thu, 31 Dec 2099 20:00:00 GMT
+Last-Modified: Sun, 03 May 2020 19:47:43 GMT
+Server: AmazonS3
+x-amz-id-2: 9fCxlAn78aj95aj2tFHbnWwBc6E/XXbpjFv86k77RxAmSAYC/6kTcuCeARBTK3+12JSq91z6EZA=
+x-amz-request-id: 46339BEAE1AE2CC6
+DNT: 1
+Referer: https://this-ecommerce.herokuapp.com/
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.129 Safari/537.36
+```
