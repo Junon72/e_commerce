@@ -29,7 +29,7 @@ Django e-commerce site
 21. [Travis Continuous Integration](#Travis-Continuous-Integration)
 22. [Heroku hosting](#Heroku-hosting)
 23. [AWS static files settings](#AWS-static-files-settings)
-
+24. [Heroku vars](#Heroku-vars)
 
 ## Setting up VSCode
 
@@ -1715,3 +1715,20 @@ STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'), )
 
 MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
 ```
+
+## Heroku vars
+
+| KEY               | VALUE |
+|-------------------|-------|
+| AWS_ACCESS_KEY_ID | ... |
+| AWS_SECRET_ACCESS_KEY | ... |
+| DATABASE_URL | ... |
+| DISABLE_COLLECTSTATIC | 1 |
+| EMAIL_HOST_PASSWORD | ... |
+| EMAIL_HOST_USER | ... |
+| SECRET_KEY | ... |
+| STRIPE_PUBLISHABLE | ... |
+| STRIPE_SECRET | ...|
+
+
+
