@@ -54,6 +54,8 @@ INSTALLED_APPS = [
     'search',
     'checkout',
     'storages',
+    'posts',
+    'django_extensions',
 ]
 
 MIDDLEWARE = [
@@ -224,3 +226,8 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
     'accounts.backends.EmailAuth'
 ]
+
+GRAPH_MODELS = {
+    'all_applications': True,
+    'group_models': True,
+}

@@ -30,6 +30,7 @@ Django e-commerce site
 22. [Heroku hosting](#Heroku-hosting)
 23. [AWS static files settings](#AWS-static-files-settings)
 24. [Heroku vars](#Heroku-vars)
+25. [Create ERD file](#Create-ERD-file)
 
 ## Setting up VSCode
 
@@ -1729,6 +1730,24 @@ MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
 | SECRET_KEY | ... |
 | STRIPE_PUBLISHABLE | ... |
 | STRIPE_SECRET | ...|
+
+## Create ERD file
+
+To add ERD file (database model graph in base directory
+
+`brew install graphviz`
+
+In venv install needed packages
+
+`pip3 install django-extensions`
+
+`pip3 install pyparsing pydo`
+
+`python3 manage.py graph_models -a > erd.dot`
+
+`python3 manage.py graph_models -a > erd.dot && python3 manage.py graph_models --pydot -a -g -0 --output erd.png`
+
+[Top](#index)
 
 
 
