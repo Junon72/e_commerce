@@ -27,6 +27,7 @@ urlpatterns = [
     path('accounts/', include('accounts.urls')),
     path('accounts/', include('accounts.url_reset')),
     path('products/', include('products.urls')),
+    path('posts/', include('posts.urls')),
     path('cart/', include('cart.urls')),
     path('search/', include('search.urls')),
     path('checkout/', include('checkout.urls')),
