@@ -7,6 +7,8 @@ certifi==2020.4.5.1
 chardet==3.0.4
 dj-database-url==0.5.0
 Django==3.0.5
+django-crispy-forms==1.9.0
+django-extensions==2.2.9
 django-forms-bootstrap==3.1.0
 django-storages==1.9.1
 docutils==0.15.2
@@ -20,7 +22,9 @@ pep8==1.7.1
 Pillow==7.1.2
 psycopg2-binary==2.8.5
 pycodestyle==2.5.0
+pydot==1.4.1
 pylint==2.5.0
+pyparsing==2.4.7
 python-dateutil==2.8.1
 pytz==2020.1
 requests==2.23.0

@@ -1,29 +1,67 @@
 {% extends "base.html" %}
-{% block content %}
 {% load static %}
-    <div class="row">
-        <div class="col-md-2 col-sm-3 text-center">
-            <a class="story-img" href="#">
-                <img src="/static/img/profile.jpg" class="img-circle">
-            </a>
-            <p><span class="boldtext">Author:</span> Jay</p>
-        </div>
-        <div class="col-sm-10 col-md-9">
-            {% if post.image %}
-                <img class="img-blogpost" src="/static/{{ post.image }}">
-            {% endif %}
-            <h3>{{ post.title }}</h3>
-            <div class="row">
-                <div class="col-xs-9">
-                    <p>{{ post.content }}</p>
-                    <p><span class="boldtext">Published on:</span> {{ post.published_date }} </p>
-                    <p><span class="boldtext">Views:</span> {{post.views}}</p>
-                    <p><span class="boldtext">Tag:</span> {{ post.tag }}</p>
-                    <a href="{% url 'get_posts' %}" class="btn btn-default">Back to Blog</a>
-                    <a href="{% url 'edit_post' post.id %}" class="btn btn-default">Edit Post</a>
-                    <hr>
-                </div>
-            </div>
-        </div>
-    </div>
-{% endblock %}
+{% load crispy_forms_tags %}
+{% load bootstrap_tags %}
+{% block content %}
+<div class="container">
+	<div class="row">
+		<div class="col card mb-4 mt-3 left top text-center">
+			<div class="card-body">
+				<h2>{% block title %} {{ post.title }} {% endblock title %}</h2>
+				{% if post.image %}
+				<img class="img-blogpost" src="/static/{{ post.image }}">
+				{% endif %}
+			</div>
+		</div>
+		<div class="col card mb-4 mt-3">
+			<div class="card-body">
+				<a class="story-img" href="#">
+					<img src="/static/img/profile.jpg" class="img-circle">
+				</a>
+				<p class="text-muted">{{ post.author }} | {{ post.published_date }} | Views: {{post.views}}</p>
+				<p class="card-text">{{ post.content | safe }}</p>
+				<hr class="solid">
+				<p class="boldtext">{{ post.tag }}</p>
+				<a href="{% url 'get_posts' %}" class="btn btn-default">Back to Blog</a>
+				<hr>
+			</div>
+		</div>
+
+
+		<div class="col card mb-4 mt-3">
+			<div class="card-body">
+				<h4>{{ post.comments.count }} comments</h4>
+				{% for comment in comments %}
+				<div class="comments p-2">
+					<p class="font-weight-bold">
+						{{ comment.user }}
+						<span class="text-muted font-weight-normal">
+							{{ comment.created_on }}
+						</span>
+					</p>
+					{{ comment.content | linebreaks }}
+
+				</div>
+				{% endfor %}
+			</div>
+		</div>
+
+		<div class="col card w-100 mb-4 mt-3">
+			<div class="card-body">
+				{% if new_comment %}
+				<div class="alert alert-success" role="alert">
+					You comment is waiting for moderation
+				</div>
+				{% else %}
+				<h5>Leave a comment</h5>
+				<form method="POST" class="mt-2 w-100">
+					{{ comment_form |  }}
+					{% csrf_token %}
+					<button type="submit" class="btn btn-primary">Submit</button>
+				</form>
+				{% endif %}
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock content %}

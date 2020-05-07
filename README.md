@@ -1749,5 +1749,324 @@ In venv install needed packages
 
 [Top](#index)
 
+## Extended e-commerce site
+
+## Add Posts
+
+`./manage.py startapp posts`
+
+In settings.py register the app.
+
+`'posts',`
+
+In posts > models.py create Post model
+
+```python
+from django.db import models
+from django.utils import timezone
+
+class Post(models.Model):
+    """
+    A single Blog post
+    """
+    title = models.CharField(max_length=200)
+    content = models.TextField()
+    created_date = models.DateTimeField(auto_now_add=True)
+    published_date = models.DateTimeField(blank=True, null=True, default=timezone.now)
+    views = models.IntegerField(default=0)
+    tag = models.CharField(max_length=30, blank=True, null=True)
+    image = models.ImageField(upload_to="img", blank=True, null=True)
+
+    def __unicode__(self):
+        return self.title
+```
+
+In posts > admin.py register the model
+
+```python
+from django.contrib import admin
+from .models import *
+
+admin.site.register(Post)
+```
+
+In posts > forms.py create a Post form
+
+```python
+from django import forms
+from .models import Post
+
+class BlogPostForm(forms.ModelForm):
+    class Meta:
+        model = Post
+        fields = ('title', 'content', 'image', 'tag', 'published_date')
+```
+
+In posts > urls add the path
+
+```python
+from django.urls import path
+from . import views
+
+urlpatterns = [
+	path('', views.get_posts, name="get_posts"),
+	path('<pk>/', views.post_detail, name="post_detail")
+]
+```
+
+Create temlates folder with plogposts.html and postdetail.html
+
+Blogposts:
+
+```html
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+    {% for post in posts %}
+        <div class="row">
+            <div class="col-md-2 col-sm-3 text-center">
+                <a class="story-img" href="#">
+                    <img src="{% static 'img/profile.jpg' %}" class="img-circle">
+                </a>
+                <p><span class="boldtext">Author:</span> Jay</p>
+            </div>
+            <div class="col-md-10 col-sm-9">
+                <h3>{{ post.title }}</h3>
+                <div class="row">
+                    <div class="col-xs-9">
+                        <p>{{ post.content|truncatewords:30 }}</p>
+                        <p><a href="{% url 'post_detail' post.id %}"  class="btn btn-default">Read more</a></p>
+                        <p><span class="boldtext">Published on:</span> {{ post.published_date }} </p>
+                        <p><span class="boldtext">Views:</span> {{post.views}}</p>
+                        <p><span class="boldtext">Tag:</span> {{ post.tag }}</p>
+                    </div>
+                </div>
+            </div>
+            <hr>
+        </div>
+    {% endfor %}
+{% endblock %}
+```
+
+Postdetail:
+
+```html
+{% extends "base.html" %}
+{% block content %}
+{% load static %}
+    <div class="row">
+        <div class="col-md-2 col-sm-3 text-center">
+            <a class="story-img" href="#">
+                <img src="/static/img/profile.jpg" class="img-circle">
+            </a>
+            <p><span class="boldtext">Author:</span> Jay</p>
+        </div>
+        <div class="col-sm-10 col-md-9">
+            {% if post.image %}
+                <img class="img-blogpost" src="/static/{{ post.image }}">
+            {% endif %}
+            <h3>{{ post.title }}</h3>
+            <div class="row">
+                <div class="col-xs-9">
+                    <p>{{ post.content }}</p>
+                    <p><span class="boldtext">Published on:</span> {{ post.published_date }} </p>
+                    <p><span class="boldtext">Views:</span> {{post.views}}</p>
+                    <p><span class="boldtext">Tag:</span> {{ post.tag }}</p>
+                    <a href="{% url 'get_posts' %}" class="btn btn-default">Back to Blog</a>
+                    <hr>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+```
+
+In ecommerce urls, modify the paths.
+The site will have a home page (index.html), modify also the paths in products > urls.py
+
+Posts > urls.fa-python
+
+```python
+urlpatterns = [
+	path('', views.get_posts, name="get_posts"),
+	path('<pk>/', views.post_detail, name="post_detail")
+]
+```
+
+Products > urls.py
+
+```python
+from django.urls import path, include
+from . import views
 
 
+urlpatterns = [
+	path('', views.all_products, name="all_products")
+]
+```
+
+E-commerce > urls.py
+
+```python
+from django.contrib import admin
+from django.urls import path, include
+from products import views
+from django.conf import settings
+from django.conf.urls.static import static
+
+
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('', include('home.urls')),
+    path('all_products', include('products.urls')),
+    path('accounts/', include('accounts.urls')),
+    path('accounts/', include('accounts.url_reset')),
+    path('products/', include('products.urls')),
+    path('posts/', include('posts.urls')),
+    path('cart/', include('cart.urls')),
+    path('search/', include('search.urls')),
+    path('checkout/', include('checkout.urls')),
+]
+
+urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_URL)
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_URL)
+```
+
+Migrate the new model and run
+
+`./manage.py makemigrations`
+
+`./manage.py migrate`
+
+`./manage.py runserver 127.0.0.1:8000`
+
+## Modifying home app
+
+The '' index will be the home page
+
+Home > views.py
+
+```pyhton
+from django.shortcuts import render
+
+# Create your views here.
+def index(request):
+    """A view that display django index page"""
+    return render(request, 'index.html')
+```
+
+Home > urls.py
+
+```python
+from django.urls import path
+from . import views
+
+urlpatterns = [
+	path('', views.index, name="index")
+]
+```
+
+Ecommerce > templates > base.html > navbar
+
+```html
+<ul class="nav navbar-nav navbar-right">
+    <li><a href="{% url 'index' %}">Home</a></li>
+    <li><a href="{% url 'all_products' %}">Products</a></li>
+    <li><a href="{% url 'get_posts' %}">Blogs</a></li>
+    {% if user.is_authenticated %}
+    <li><a href="{% url 'profile' %}"><i class="fa fa-user"></i> Profile</a></li>
+    <li><a href="{% url 'logout' %}"><i class="fa fa-sign-out"></i> Log Out</a></li>
+    {%  else %}
+    <li><a href="{% url 'register' %}"><i class="fa fa-user-plus"></i> Register</a></li>
+    <li><a href="{% url 'login' %}"><i class="fa fa-sign-in"></i> Log In</a></li>
+    {% endif %}
+    <li>
+        <a href="{% url 'view_cart' %}">
+            <i class="fa fa-shopping-cart"></i>Cart
+            {% if product_count > 0 %}
+            <label class="badge badge-warning">{{ product_count }}</label>
+            {% endif %}
+        </a>
+    </li>
+</ul>
+```
+
+Home > templates > index.html
+
+```html
+
+```
+
+## Commments
+
+`./manage.py startapp comments`
+
+Add app to settings
+
+`'comments',`
+
+Comments > models.py
+
+```python
+from django.db import models
+from django.utils import timezone
+from django.contrib.auth.models import User
+from posts.models import Post
+
+class Comment(models.Model):
+    post = models.ForeignKey(
+        Post,
+        on_delete=models.CASCADE,
+        related_name='comments'
+    )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='comments'
+    )
+    body = models.TextField()
+    created = models.DateTimeField(auto_now_add=True)
+    published_date = models.DateTimeField(blank=True, null=True, default=timezone.now)
+
+    class Meta:
+        ordering = ('created',)
+
+    def __str__(self):
+        return self.body[:20]
+```
+
+Comments > admin.py register model
+
+Migrate
+
+`./manage.py makemigrations comments`
+
+`./manage.py migrate comments`
+
+Comments > views.py
+
+```python
+
+```
+
+Comments > urls.py
+
+```python
+from django.urls import path, redirect
+from . import views
+
+app_name = 'comments'
+
+urlpatterns = [
+	path('post-comment/<int:post_id>/', views.post_comment, name="post_comment")
+]
+```
+
+
+
+
+
+`pip3 install django-crispy-forms`
+
+`pip3 freeze > requirements.txt`

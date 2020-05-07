@@ -56,7 +56,7 @@ def register(request):
                 auth.login(user=user, request=request)
                 messages.success(request, "You have successfully registered")
             else:
-                messages.error(request, "unable to log you in at this time!")
+                messages.error(request, "Unable to log you in at this time!")
     else:
         user_form = UserRegistrationForm()
     return render(request, 'register.html', {'user_form': user_form})
