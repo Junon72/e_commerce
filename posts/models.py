@@ -27,7 +27,7 @@ class Comment(models.Model):
         on_delete=models.CASCADE,
         related_name='comments'
     )
-    username = models.ForeignKey(
+    owner = models.ForeignKey(
         User,
         on_delete=models.SET_DEFAULT,
         related_name='comments',
@@ -35,12 +35,12 @@ class Comment(models.Model):
 		default=1
     )
     content = models.TextField()
-    created_on = models.DateTimeField(auto_now_add=True)
+    created_date = models.DateTimeField(auto_now_add=True)
     published_date = models.DateTimeField(blank=True, null=True, default=timezone.now)
     active = models.BooleanField(default=False)
 
     class Meta:
-        ordering = ('created_on',)
+        ordering = ('-created_date',)
 
     def __str__(self):
-        return 'Comment {} by {}'.format(self.content, self.username)
+        return 'Comment {} by {}'.format(self.content, self.owner)

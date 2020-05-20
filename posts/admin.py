@@ -6,9 +6,9 @@ admin.site.register(Post)
 
 @admin.register(Comment)
 class CommentAdmin(admin.ModelAdmin):
-    list_display = ('username', 'content', 'post', 'created_on')
-    list_filter = ('active', 'created_on')
-    search_fields = ('username', 'content')
+    list_display = ('owner', 'content', 'post', 'created_date')
+    list_filter = ('active', 'created_date')
+    search_fields = ('owner', 'content')
     actions = ['approve_comments']
     
     

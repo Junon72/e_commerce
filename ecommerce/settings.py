@@ -91,7 +91,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'ecommerce.wsgi.application'
 
-CRISPY_TEMPLATE_PACK = 'boostrap4'
+CRISPY_TEMPLATE_PACK = 'uni_form'
 
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases

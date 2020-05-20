@@ -34,7 +34,7 @@
 				{% for comment in comments %}
 				<div class="comments p-2">
 					<p class="font-weight-bold">
-						{{ comment.user }}
+						{{ comment.owner }}
 						<span class="text-muted font-weight-normal">
 							{{ comment.created_on }}
 						</span>
@@ -46,17 +46,18 @@
 			</div>
 		</div>
 
-		<div class="col card w-100 mb-4 mt-3">
+		<div class="col-12 card w-100 mb-4 mt-3">
 			<div class="card-body">
-				{% if new_comment %}
+				{% if comment.active == False %}
 				<div class="alert alert-success" role="alert">
 					You comment is waiting for moderation
 				</div>
 				{% else %}
 				<h5>Leave a comment</h5>
 				<form method="POST" class="mt-2 w-100">
-					{{ comment_form |  }}
+					<textarea class="form-control" id="comment_form" rows="3"></textarea>
 					{% csrf_token %}
+					<!-- <input type="hidden" name="owner" value="{{ user }}"> -->
 					<button type="submit" class="btn btn-primary">Submit</button>
 				</form>
 				{% endif %}

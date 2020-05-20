@@ -40,22 +40,22 @@ def post_detail(request, pk):
 	post = get_object_or_404(Post, pk=pk)
 	post.views += 1
 	post.save()
-	comments = Comment.objects.filter(active=True).order_by('-created_on')
-	new_comment = None
+	comments = Comment.objects.filter(active=True).order_by('-created_date')
+	comment = None
 	# Processing post requests
 	if request.method == 'POST':
 		comment_form = CommentForm(request.POST)
 		if comment_form.is_valid():
-			new_comment = comment_form.save(commit=False)
-			new_comment.post = post
-			new_comment.username = request.user
-			new_comment.save()
+			comment = comment_form.save(commit=False)
+			comment.post = post
+			comment.owner = request.user
+			comment.save()
 			return redirect('post_detail', pk=post.pk)
 	else:
 		comment_form = CommentForm()
 
 	return render(request, template_name, {'comment_form': comment_form, 
-											'new_comment': new_comment,
+											'comment': comment,
 											'comments': comments, 'post': post})
 
 # def create_or_edit_post(request, pk=None):

@@ -1560,7 +1560,7 @@ This XML file does not appear to have any style information associated with it. 
 
 In base.html add icons to the navigation buttons
 
-``html
+```html
 {% if user.is_authenticated %}
 <li><a href="{% url 'profile' %}"><i class="fa fa-user"></i> Profile</a></li>
 <li><a href="{% url 'logout' %}"><i class="fa fa-sign-out"></i> Log Out</a></li>
