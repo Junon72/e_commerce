@@ -173,7 +173,7 @@ else:
     AWS_STORAGE_BUCKET_NAME = 'jussin-ecommerce'
     AWS_S3_REGION_NAME ='eu-north-1'
     AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
-    AWS_SECRET_ACCESS_KEY = os.os.getenv("AWS_SECRET_ACCESS_KEY")
+    AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
     AWS_DEFAULT_ACL = 'public-read'
     AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
     AWS_S3_OBJECT_PARAMETERS = {
