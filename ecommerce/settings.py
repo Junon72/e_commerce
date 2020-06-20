@@ -168,7 +168,7 @@ if os.path.exists('env.py'):
     STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 ## if env.py does not exist, use AWS S3 Static and Media Files
 else:
-    print("AWS S3 Static File in use.")
+    print("AWS S3 Static Files in use.")
     # AWS Settings
     AWS_STORAGE_BUCKET_NAME = 'jussin-ecommerce'
     AWS_S3_REGION_NAME ='eu-north-1'
@@ -211,15 +211,15 @@ else:
 
 # STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'), )
 
-# MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
+MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
 
 STRIPE_PUBLISHABLE = os.getenv('STRIPE_PUBLISHABLE')
 STRIPE_SECRET = os.getenv('STRIPE_SECRET')
 
 
-if os.path.exists('env.py'):
-    EMAIL_HOST_USER = os.getenv("EMAIL_ADDRESS")
-    EMAIL_HOST_PASSWORD = os.getenv("EMAIL_PASSWORD")
+# if os.path.exists('env.py'):
+EMAIL_HOST_USER = os.getenv("EMAIL_ADDRESS")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_PASSWORD")
 
 EMAIL_USE_TLS = True
 EMAIL_HOST = 'smtp.gmail.com'
