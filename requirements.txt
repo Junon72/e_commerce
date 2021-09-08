@@ -19,7 +19,7 @@ jmespath==0.9.5
 lazy-object-proxy==1.4.3
 mccabe==0.6.1
 pep8==1.7.1
-Pillow==7.1.2
+Pillow==8.3.2
 psycopg2-binary==2.8.5
 pycodestyle==2.5.0
 pydot==1.4.1
