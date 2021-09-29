@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.com/Junon72/e_commerce.svg?branch=master)](https://travis-ci.com/Junon72/e_commerce)
 
-Django e-commerce site
+Django e-commerce site - not conpleted for production!
 
 ## index
 
